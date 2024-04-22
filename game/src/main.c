@@ -1,6 +1,7 @@
 #include "raylib.h"
 
 int main(void) {
+	//test stuff
 	InitWindow(800, 450, "raylib [core] example - basic window");
 
 	while (!WindowShouldClose()) {
