@@ -2,20 +2,15 @@
 #include "mathf.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "integrator.h"
+#include "world.h"
 
 #include <stdlib.h>
 #include <assert.h>
 
-#define MAX_BODIES 10000
-
 int main(void) {
 	InitWindow(1280, 720, "Physics Engine");
 	SetTargetFPS(60);
-
-	Body* bodies = (Body*)malloc(sizeof(Body) * MAX_BODIES);
-	assert(bodies);
-
-	int bodyCount = 0;
 
 	while (!WindowShouldClose()) {
 		//update
@@ -24,9 +19,25 @@ int main(void) {
 
 		Vector2 position = GetMousePosition();
 		if ((IsMouseButtonDown(0))) {
-			bodies[bodyCount].position = position;
-			bodies[bodyCount].velocity = createVector2(GetRandomFloatValue(-5, 5), GetRandomFloatValue(-5, 5));
-			bodyCount++;
+			ncBody* body = CreateBody();
+			body->position = position;
+			body->mass = GetRandomFloatValue(3, 10);
+			//ApplyForce(body, createVector2(GetRandomFloatValue(-50, 50), GetRandomFloatValue(-50, 50)));
+		}
+
+		//apply force
+		ncBody* body = ncBodies;
+		while (body) {
+			ApplyForce(body, createVector2(0, -100));
+			body = body->next;
+		}
+
+		
+		//update bodies
+		body = ncBodies;
+		while (body) {
+			ExplicitEuler(body, dt);
+			body = body->next;
 		}
 
 		//render
@@ -38,17 +49,19 @@ int main(void) {
 
 		DrawCircle((int)position.x, (int)position.y, 10, PURPLE);
 
-		//update bodies
-		for (int i = 0; i < bodyCount; i++) {
-			bodies[i].position = Vector2Add(bodies[i].position, bodies[i].velocity);
-			DrawCircle((int)bodies[i].position.x, (int)bodies[i].position.y, 10, BLUE);
+		//draw bodies
+		body = ncBodies;
+		while (body) {
+			DrawCircle((int)body->position.x, (int)body->position.y, body->mass, BLUE);
+			ClearForce(body);
+			body = body->next;
 		}
 
 		EndDrawing();
 	}
 
 	CloseWindow();
-	free(bodies);
+	free(ncBodies);
 
 	return 0;
 }
