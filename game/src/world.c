@@ -1,10 +1,12 @@
 #include "world.h"
+#include "body.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
 ncBody* ncBodies = NULL;
 int ncbodyCount = 0;
+Vector2 ncGravity;
 
 ncBody* CreateBody() {
 	ncBody* b = (ncBody*)malloc(sizeof(ncBody));
@@ -29,7 +31,7 @@ void DestroyBody(ncBody* body) {
 
 	if (body->prev != NULL) body->prev->next = body->next;
 
-	if (body->next != NULL) body->next->prev = body->next;
+	if (body->next != NULL) body->next->prev = body->prev;
 
 	if (body == ncBodies) ncBodies = body->next;
 

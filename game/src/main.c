@@ -17,26 +17,32 @@ int main(void) {
 		float dt = GetFrameTime();
 		float fps = (float)GetFPS();
 
+		//initialize world
+		ncGravity = (Vector2){ 0, 30 };
+
 		Vector2 position = GetMousePosition();
 		if ((IsMouseButtonDown(0))) {
 			ncBody* body = CreateBody();
 			body->position = position;
 			body->mass = GetRandomFloatValue(3, 10);
-			//ApplyForce(body, createVector2(GetRandomFloatValue(-50, 50), GetRandomFloatValue(-50, 50)));
+			body->iMass = 1 / body->mass;
+			body->type = BT_DYNAMIC;
+			body->damping = 2.1f;
+			body->gravityScale = 10;
+			ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
 		}
 
 		//apply force
 		ncBody* body = ncBodies;
 		while (body) {
-			ApplyForce(body, createVector2(0, -100));
+			//ApplyForce(body, createVector2(0, -100), FM_FORCE);
 			body = body->next;
 		}
-
 		
 		//update bodies
 		body = ncBodies;
 		while (body) {
-			ExplicitEuler(body, dt);
+			Step(body, dt);
 			body = body->next;
 		}
 
