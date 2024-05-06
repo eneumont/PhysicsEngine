@@ -4,6 +4,7 @@
 #include "raymath.h"
 #include "integrator.h"
 #include "world.h"
+#include "force.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -18,7 +19,7 @@ int main(void) {
 		float fps = (float)GetFPS();
 
 		//initialize world
-		ncGravity = (Vector2){ 0, 30 };
+		//ncGravity = (Vector2){ 0, 0 };
 
 		Vector2 position = GetMousePosition();
 		if ((IsMouseButtonDown(0))) {
@@ -29,21 +30,15 @@ int main(void) {
 			body->type = BT_DYNAMIC;
 			body->damping = 2.1f;
 			body->gravityScale = 10;
+			body->color = ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
 			ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
 		}
 
 		//apply force
-		ncBody* body = ncBodies;
-		while (body) {
-			//ApplyForce(body, createVector2(0, -100), FM_FORCE);
-			body = body->next;
-		}
-		
-		//update bodies
-		body = ncBodies;
-		while (body) {
+		ApplyGravity(ncBodies, 30);
+
+		for (ncBody* body = ncBodies; body; body = body->next) {
 			Step(body, dt);
-			body = body->next;
 		}
 
 		//render
@@ -56,11 +51,9 @@ int main(void) {
 		DrawCircle((int)position.x, (int)position.y, 10, PURPLE);
 
 		//draw bodies
-		body = ncBodies;
-		while (body) {
-			DrawCircle((int)body->position.x, (int)body->position.y, body->mass, BLUE);
+		for (ncBody* body = ncBodies; body; body = body->next) {
+			DrawCircle((int)body->position.x, (int)body->position.y, body->mass, body->color);
 			ClearForce(body);
-			body = body->next;
 		}
 
 		EndDrawing();
