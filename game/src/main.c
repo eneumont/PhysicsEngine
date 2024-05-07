@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 int main(void) {
 	InitWindow(1280, 720, "Physics Engine");
@@ -22,7 +23,8 @@ int main(void) {
 		//ncGravity = (Vector2){ 0, 0 };
 
 		Vector2 position = GetMousePosition();
-		if ((IsMouseButtonDown(0))) {
+
+		if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_Z)) {
 			ncBody* body = CreateBody();
 			body->position = position;
 			body->mass = GetRandomFloatValue(3, 10);
@@ -31,7 +33,71 @@ int main(void) {
 			body->damping = 2.1f;
 			body->gravityScale = 10;
 			body->color = ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
+			
 			ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
+		}
+
+		if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_X)) {
+			ncBody* body = CreateBody();
+			body->position = position;
+			body->mass = GetRandomFloatValue(3, 10);
+			body->iMass = 1 / body->mass;
+			body->type = BT_DYNAMIC;
+			body->damping = 2.1f;
+			body->gravityScale = 10;
+			body->color = ColorFromHSV(GetRandomFloatValue(0, 360), 1, 1);
+
+			Vector2 force = Vector2Scale(GetVector2FromAngle(GetRandomFloatValue(0, 360) * DEG2RAD), GetRandomFloatValue(1000, 2000));
+
+			ApplyForce(body, force, FM_IMPULSE);
+		}
+
+		if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_C)) {
+			ncBody* body = CreateBody();
+			body->position = position;
+			body->mass = GetRandomFloatValue(3, 10);
+			body->iMass = 1 / body->mass;
+			body->type = BT_DYNAMIC;
+			body->damping = 2.1f;
+			body->gravityScale = 10;
+			body->color = ColorFromHSV(GetRandomFloatValue(0, 360), 1, 1);
+
+			float angle = GetRandomFloatValue(250, 280);
+			Vector2 force = Vector2Scale(GetVector2FromAngle((angle + GetRandomFloatValue(-30, 30)) * DEG2RAD), GetRandomFloatValue(1000, 5000));
+			ApplyForce(body, force, FM_IMPULSE);
+		}
+
+		if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_V)) {
+			ncBody* body = CreateBody();
+			body->position = Vector2Subtract(position, (Vector2){ 0, 60 });
+			body->mass = GetRandomFloatValue(3, 10);
+			body->iMass = 1 / body->mass;
+			body->type = BT_DYNAMIC;
+			body->damping = 2.1f;
+			body->gravityScale = 10;
+			body->color = ColorFromHSV(GetRandomFloatValue(0, 360), 1, 1);
+			Vector2 force = Vector2Scale(GetVector2FromAngle(GetRandomFloatValue(0, 360) * DEG2RAD), GetRandomFloatValue(10, 20));
+			ApplyForce(body, force, FM_VELOCITY);
+
+			ncBody* body1 = CreateBody();
+			body1->position = Vector2Subtract(position, (Vector2) { 60, -60 });
+			body1->mass = GetRandomFloatValue(3, 10);
+			body1->iMass = 1 / body1->mass;
+			body1->type = BT_DYNAMIC;
+			body1->damping = 2.1f;
+			body1->gravityScale = 10;
+			body1->color = ColorFromHSV(GetRandomFloatValue(0, 360), 1, 1);
+			ApplyForce(body1, force, FM_VELOCITY);
+
+			ncBody* body2 = CreateBody();
+			body2->position = Vector2Subtract(position, (Vector2) { -60, -60 });
+			body2->mass = GetRandomFloatValue(3, 10);
+			body2->iMass = 1 / body2->mass;
+			body2->type = BT_DYNAMIC;
+			body2->damping = 2.1f;
+			body2->gravityScale = 10;
+			body2->color = ColorFromHSV(GetRandomFloatValue(0, 360), 1, 1);
+			ApplyForce(body2, force, FM_VELOCITY);
 		}
 
 		//apply force
