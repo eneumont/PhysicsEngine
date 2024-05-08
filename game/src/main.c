@@ -5,6 +5,8 @@
 #include "integrator.h"
 #include "world.h"
 #include "force.h"
+#include "render.h"
+#include "editor.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -12,6 +14,7 @@
 
 int main(void) {
 	InitWindow(1280, 720, "Physics Engine");
+	InitEditor();
 	SetTargetFPS(60);
 
 	while (!WindowShouldClose()) {
@@ -20,24 +23,28 @@ int main(void) {
 		float fps = (float)GetFPS();
 
 		//initialize world
-		//ncGravity = (Vector2){ 0, 0 };
+		ncGravity = (Vector2){ 0, -1 };
 
 		Vector2 position = GetMousePosition();
+		ncScreenZoom -= GetMouseWheelMove() * 0.2f;
+		ncScreenZoom = Clamp(ncScreenZoom, 0.1f, 10);
 
-		if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_Z)) {
+		UpdateEditor(position);
+
+		if ((IsMouseButtonDown(0))) {
 			ncBody* body = CreateBody();
-			body->position = position;
-			body->mass = GetRandomFloatValue(3, 10);
+			body->position = ConvertScreenToWorld(position);
+			body->mass = GetRandomFloatValue(ncEditorData.SliderBar001Value, ncEditorData.SliderBar002Value);
 			body->iMass = 1 / body->mass;
 			body->type = BT_DYNAMIC;
 			body->damping = 2.1f;
 			body->gravityScale = 10;
 			body->color = ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
 			
-			ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
+			//ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
 		}
 
-		if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_X)) {
+		/*if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_X)) {
 			ncBody* body = CreateBody();
 			body->position = position;
 			body->mass = GetRandomFloatValue(3, 10);
@@ -98,10 +105,10 @@ int main(void) {
 			body2->gravityScale = 10;
 			body2->color = ColorFromHSV(GetRandomFloatValue(0, 360), 1, 1);
 			ApplyForce(body2, force, FM_VELOCITY);
-		}
+		}*/
 
 		//apply force
-		ApplyGravity(ncBodies, 30);
+		ApplyGravity(ncBodies, ncEditorData.SliderBar003Value);
 
 		for (ncBody* body = ncBodies; body; body = body->next) {
 			Step(body, dt);
@@ -110,6 +117,8 @@ int main(void) {
 		//render
 		BeginDrawing();
 		ClearBackground(BLACK);
+
+
 		//stats
 		DrawText(TextFormat("FPS: %.2f (%.2fms)", fps, 1000/fps), 10, 10, 20, LIME);
 		DrawText(TextFormat("Frame: %.4f", dt), 10, 30, 20, LIME);
@@ -118,10 +127,13 @@ int main(void) {
 
 		//draw bodies
 		for (ncBody* body = ncBodies; body; body = body->next) {
-			DrawCircle((int)body->position.x, (int)body->position.y, body->mass, body->color);
-			ClearForce(body);
+			Vector2 screen = ConvertWorldToScreen(body->position);
+			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel(body->mass), body->color);
+			//ClearForce(body);
 		}
 
+		DrawEditor();
+		
 		EndDrawing();
 	}
 
