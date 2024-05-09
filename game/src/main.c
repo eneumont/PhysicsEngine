@@ -32,14 +32,10 @@ int main(void) {
 		UpdateEditor(position);
 
 		if ((IsMouseButtonDown(0))) {
-			ncBody* body = CreateBody();
-			body->position = ConvertScreenToWorld(position);
-			body->mass = GetRandomFloatValue(ncEditorData.SliderBar001Value, ncEditorData.SliderBar002Value);
-			body->iMass = 1 / body->mass;
-			body->type = BT_DYNAMIC;
-			body->damping = 2.1f;
-			body->gravityScale = 10;
-			body->color = ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
+			//ncBody* body = CreateBody(ConvertScreenToWorld(position), ncEditorData.MassMinValue, ncEditorData.BodyTypeActive);
+			//body->damping = ncEditorData.DampingValue;
+			//body->gravityScale = ncEditorData.GravityScaleValue;
+			//body->color = ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
 			
 			//ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
 		}
@@ -123,8 +119,6 @@ int main(void) {
 		DrawText(TextFormat("FPS: %.2f (%.2fms)", fps, 1000/fps), 10, 10, 20, LIME);
 		DrawText(TextFormat("Frame: %.4f", dt), 10, 30, 20, LIME);
 
-		DrawCircle((int)position.x, (int)position.y, 10, PURPLE);
-
 		//draw bodies
 		for (ncBody* body = ncBodies; body; body = body->next) {
 			Vector2 screen = ConvertWorldToScreen(body->position);
@@ -132,7 +126,7 @@ int main(void) {
 			//ClearForce(body);
 		}
 
-		DrawEditor();
+		DrawEditor(position);
 		
 		EndDrawing();
 	}

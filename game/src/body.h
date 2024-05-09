@@ -3,9 +3,9 @@
 #include "raymath.h"
 
 typedef enum {
-	BT_STATIC,
+	BT_DYNAMIC,
 	BT_KINEMATIC,
-	BT_DYNAMIC
+	BT_STATIC
 } ncBodyType;
 
 typedef enum {
