@@ -2,9 +2,18 @@
 #include "raylib.h"
 
 typedef struct ncEditorData {
-	float SliderBar001Value;
-	float SliderBar002Value;
-	float SliderBar003Value;
+    Vector2 anchor01;
+    Vector2 anchor02;
+    Vector2 anchor03;
+
+    bool EditorBoxActive;
+    bool BodyTypeEditMode;
+    int BodyTypeActive;
+    float MassMinValue;
+    float MassMaxValue;
+    float DampingValue;
+    float GravityScaleValue;
+    float GravitationValue;
 } ncEditorData_t;
 
 extern ncEditorData_t ncEditorData;
@@ -15,3 +24,6 @@ extern bool ncEditorIntersect;
 void InitEditor();
 void UpdateEditor(Vector2 mousePosition);
 void DrawEditor();
+
+struct ncBody* GetBodyIntersect(struct ncBody* bodies, Vector2 position); 
+void DrawLineBodyToPosition(struct ncBody* body, Vector2 position);

@@ -7,12 +7,16 @@
 #include "force.h"
 #include "render.h"
 #include "editor.h"
+#include "spring.h"
 
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
 
 int main(void) {
+	ncBody* selectedBody = NULL;
+	ncBody* connectBody = NULL;
+
 	InitWindow(1280, 720, "Physics Engine");
 	InitEditor();
 	SetTargetFPS(60);
@@ -31,13 +35,31 @@ int main(void) {
 
 		UpdateEditor(position);
 
+		selectedBody = GetBodyIntersect(ncBodies, position);
+		if (selectedBody) {
+			Vector2 screen = ConvertWorldToScreen(selectedBody->position);
+			DrawCircleLines(screen.x, screen.y, ConvertWorldToPixel(selectedBody->mass) + 5, YELLOW);
+		}
+
+		//create body
 		if ((IsMouseButtonDown(0))) {
-			//ncBody* body = CreateBody(ConvertScreenToWorld(position), ncEditorData.MassMinValue, ncEditorData.BodyTypeActive);
-			//body->damping = ncEditorData.DampingValue;
-			//body->gravityScale = ncEditorData.GravityScaleValue;
-			//body->color = ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
+			ncBody* body = CreateBody(ConvertScreenToWorld(position), ncEditorData.MassMinValue, ncEditorData.BodyTypeActive);
+			body->damping = ncEditorData.DampingValue;
+			body->gravityScale = ncEditorData.GravityScaleValue;
+			body->color = ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
 			
 			//ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
+			AddBody(body);
+		}
+
+		//connect springs
+		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && selectedBody) connectBody = selectedBody;
+		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && connectBody) DrawLineBodyToPosition(connectBody, position);
+		if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && connectBody) {
+			if (selectedBody && selectedBody != connectBody) {
+				ncSpring_t* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position), 20);
+				AddSpring(spring);
+			}
 		}
 
 		/*if ((IsMouseButtonDown(0)) && IsKeyDown(KEY_X)) {
@@ -104,7 +126,8 @@ int main(void) {
 		}*/
 
 		//apply force
-		ApplyGravity(ncBodies, ncEditorData.SliderBar003Value);
+		ApplyGravity(ncBodies, ncEditorData.GravitationValue);
+		ApplySpringForce(ncSprings);
 
 		for (ncBody* body = ncBodies; body; body = body->next) {
 			Step(body, dt);
@@ -123,7 +146,13 @@ int main(void) {
 		for (ncBody* body = ncBodies; body; body = body->next) {
 			Vector2 screen = ConvertWorldToScreen(body->position);
 			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel(body->mass), body->color);
-			//ClearForce(body);
+		}
+
+		//draw springs
+		for (ncSpring_t* spring = ncSprings; spring; spring = spring->next) {
+			Vector2 screen1 = ConvertWorldToScreen(spring->body1->position);
+			Vector2 screen2 = ConvertWorldToScreen(spring->body2->position);
+			DrawLine((int)screen1.x, (int)screen1.y, (int)screen2.x, (int)screen2.y, RED);
 		}
 
 		DrawEditor(position);
