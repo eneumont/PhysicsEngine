@@ -5,8 +5,6 @@
 #include <string.h>
 
 ncSpring_t* ncSprings = NULL;
-int ncSpring_tCount = 0;
-Vector2 ncGravity;
 
 ncSpring_t* CreateSpring(struct ncBody* body1, struct ncBody* body2, float restLength, float k) {
 	ncSpring_t* s = (ncSpring_t*)malloc(sizeof(ncSpring_t));
@@ -31,8 +29,6 @@ void AddSpring(ncSpring_t* s) {
 		ncSprings->prev = s;
 	}
 	ncSprings = s;
-
-	ncSpring_tCount++;
 }
 
 void DestroySpring(ncSpring_t* s) {
@@ -43,7 +39,6 @@ void DestroySpring(ncSpring_t* s) {
 
 	if (s == ncSprings) ncSprings = s->next;
 
-	ncSpring_tCount--;
 	free(s);
 }
 
@@ -52,5 +47,17 @@ void DestroyAllSprings() {
 }
 
 void ApplySpringForce(ncSpring_t* springs) {
+	for (ncSpring_t* spring = springs; spring; spring = spring->next) {
+		Vector2 direction = Vector2Subtract(spring->body1->position, spring->body2->position);
+		if (direction.x == 0 && direction.y == 0) continue;
 
+		float length = Vector2Length(direction);
+		float x = length - spring->restLength;
+		float force = -spring->k * x; // f = -kx <- hooke's law
+
+		Vector2 ndirection = Vector2Normalize(direction);
+
+		ApplyForce(spring->body1, Vector2Scale(ndirection, force), FM_FORCE);
+		ApplyForce(spring->body2, Vector2Scale(Vector2Negate(ndirection), force), FM_FORCE); //could also use -force instead
+	}
 }
