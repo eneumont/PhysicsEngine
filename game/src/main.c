@@ -29,7 +29,7 @@ int main(void) {
 		float fps = (float)GetFPS();
 
 		//initialize world
-		ncGravity = (Vector2){ 0, -1 };
+		ncGravity = (Vector2){ 0, -ncEditorData.GravitationValue };
 
 		Vector2 position = GetMousePosition();
 		ncScreenZoom -= GetMouseWheelMove() * 0.2f;
@@ -44,11 +44,12 @@ int main(void) {
 		}
 
 		//create body
-		if ((IsMouseButtonPressed(0))) {
+		if ((IsMouseButtonPressed(0) || (IsMouseButtonDown(0) && IsKeyDown(KEY_LEFT_CONTROL)))) {
 			ncBody* body = CreateBody(ConvertScreenToWorld(position), ncEditorData.MassMinValue, ncEditorData.BodyTypeActive);
 			body->damping = ncEditorData.DampingValue;
 			body->gravityScale = ncEditorData.GravityScaleValue;
 			body->color = WHITE;//ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
+			body->restitution = 0.8f;
 			
 			//ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
 			AddBody(body);
@@ -139,22 +140,16 @@ int main(void) {
 		//collision
 		ncContact_t* contacts = NULL;
 		CreateContacts(ncBodies, &contacts);
+		SeparateContacts(contacts);
+		ResolveContacts(contacts);
 
 		//render
 		BeginDrawing();
 		ClearBackground(BLACK);
 
-
 		//stats
 		DrawText(TextFormat("FPS: %.2f (%.2fms)", fps, 1000/fps), 10, 10, 20, LIME);
 		DrawText(TextFormat("Frame: %.4f", dt), 10, 30, 20, LIME);
-
-		//draw springs
-		for (ncSpring_t* spring = ncSprings; spring; spring = spring->next) {
-			Vector2 screen1 = ConvertWorldToScreen(spring->body1->position);
-			Vector2 screen2 = ConvertWorldToScreen(spring->body2->position);
-			DrawLine((int)screen1.x, (int)screen1.y, (int)screen2.x, (int)screen2.y, RED);
-		}
 
 		//draw bodies
 		for (ncBody* body = ncBodies; body; body = body->next) {
@@ -166,6 +161,13 @@ int main(void) {
 		for (ncContact_t* contact = contacts; contact; contact = contact->next) {
 			Vector2 screen = ConvertWorldToScreen(contact->body1->position);
 			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel(contact->body1->mass * 0.5f), BLUE);
+		}
+
+		//draw springs
+		for (ncSpring_t* spring = ncSprings; spring; spring = spring->next) {
+			Vector2 screen1 = ConvertWorldToScreen(spring->body1->position);
+			Vector2 screen2 = ConvertWorldToScreen(spring->body2->position);
+			DrawLine((int)screen1.x, (int)screen1.y, (int)screen2.x, (int)screen2.y, RED);
 		}
 
 		DrawEditor(position);

@@ -13,7 +13,7 @@ ncEditorData_t ncEditorData;
 Vector2 anchor01 = { 900, 10 };
 Texture2D cursorTexture;
 
-bool WindowBox000Active = true;
+//bool WindowBox000Active = true;
 
 void InitEditor() {
     GuiLoadStyle("raygui/styles/lavanda/style_lavanda.rgs");
@@ -32,7 +32,7 @@ void InitEditor() {
     ncEditorData.DampingValue = 0.0f;
     ncEditorData.GravitationValue = 0.0f;
     ncEditorData.BodyTypeActive = 0;
-    ncEditorData.GravityScaleValue = 0.0f;
+    ncEditorData.GravityScaleValue = 1.0f;
     ncEditorData.MassMaxValue = 10.0f;
     ncEditorData.MassMinValue = 0.5f;
 
@@ -40,7 +40,9 @@ void InitEditor() {
 }
 
 void UpdateEditor(Vector2 position) {
-    //
+    if (IsKeyPressed(KEY_TAB)) ncEditorData.EditorBoxActive = !ncEditorData.EditorBoxActive;
+
+    ncEditorIntersect = ncEditorData.EditorBoxActive && CheckCollisionPointRec(position, editorRect);
 }
 
 void DrawEditor(Vector2 position) {

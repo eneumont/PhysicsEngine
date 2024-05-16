@@ -4,9 +4,9 @@
 #include "mathf.h"
 #include "raymath.h"
 
-//#include <stdlib.h>
-//#include <assert.h>
-//#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
 
 bool Intersects(ncBody* body1, ncBody* body2) {
 	// if distance < radius
@@ -55,9 +55,45 @@ ncContact_t* GenerateContact(ncBody* body1, ncBody* body2) {
 }
 
 void SeparateContacts(ncContact_t* contacts) {
+	// Loop through each contact in the contacts list
+	for (ncContact_t* contact = contacts; contact; contact = contact->next) {
+		// Calculate the total inverse mass of the bodies involved in the contact
+		float totalInverseMass = contact->body1->iMass + contact->body2->iMass;
 
+		// Calculate the separation vector based on the contact normal and penetration depth
+		Vector2 separation = Vector2Scale(contact->normal, contact->depth / totalInverseMass);
+
+		// Move the first body's position by an amount proportional to its inverse mass
+		contact->body1->position = Vector2Add(contact->body1->position, Vector2Scale(separation, contact->body1->iMass));
+
+		// Move the second body's position by an amount proportional to its inverse mass (opposite direction)
+		contact->body2->position = Vector2Add(contact->body2->position, Vector2Scale(separation, -contact->body2->iMass));
+	}
 }
 
 void ResolveContacts(ncContact_t* contacts) {
+	// Loop through each contact in the contacts list
+	for (ncContact_t* contact = contacts; contact; contact = contact->next) {
+		// Calculate the relative velocity between the bodies involved in the contact
+		Vector2 relativeVelocity = Vector2Subtract(contact->body1->velocity, contact->body2->velocity);
 
+		// Calculate the normal velocity (relative velocity projected onto the contact normal)
+		float normalVelocity = Vector2DotProduct(relativeVelocity, contact->normal);
+
+		// If normal velocity is positive, the bodies are moving away from each other, so skip this contact
+		if (normalVelocity > 0) continue;
+
+		// Calculate the impulse magnitude using restitution and inverse mass
+		float totalInverseMass = contact->body1->iMass + contact->body2->iMass;
+		float impulseMagnitude = -(1 + contact->restitution) * normalVelocity / totalInverseMass;
+
+		// Calculate the impulse vector in the direction of the contact normal
+		Vector2 impulse = Vector2Scale(contact->normal, impulseMagnitude);
+
+		// Apply the impulse to the first body
+		ApplyForce(contact->body1, impulse, FM_IMPULSE);
+
+		// Apply the opposite impulse to the second body
+		ApplyForce(contact->body2, Vector2Negate(impulse), FM_IMPULSE);
+	}
 }
