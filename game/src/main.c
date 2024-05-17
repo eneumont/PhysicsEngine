@@ -44,7 +44,6 @@ int main(void) {
 		}
 
 		if (!ncEditorIntersect) {
-
 			//create body
 			if ((IsMouseButtonPressed(0) || (IsMouseButtonDown(0) && IsKeyDown(KEY_LEFT_CONTROL)))) {
 				ncBody* body = CreateBody(ConvertScreenToWorld(position), ncEditorData.MassValue, ncEditorData.BodyTypeActive);
