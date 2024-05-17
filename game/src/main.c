@@ -29,7 +29,7 @@ int main(void) {
 		float fps = (float)GetFPS();
 
 		//initialize world
-		ncGravity = (Vector2){ 0, -ncEditorData.GravitationValue };
+		ncGravity = (Vector2){ 0, ncEditorData.GravityValue };
 
 		Vector2 position = GetMousePosition();
 		ncScreenZoom -= GetMouseWheelMove() * 0.2f;
@@ -43,25 +43,28 @@ int main(void) {
 			DrawCircleLines(screen.x, screen.y, ConvertWorldToPixel(selectedBody->mass * 0.5f) + 5, YELLOW);
 		}
 
-		//create body
-		if ((IsMouseButtonPressed(0) || (IsMouseButtonDown(0) && IsKeyDown(KEY_LEFT_CONTROL)))) {
-			ncBody* body = CreateBody(ConvertScreenToWorld(position), ncEditorData.MassMinValue, ncEditorData.BodyTypeActive);
-			body->damping = ncEditorData.DampingValue;
-			body->gravityScale = ncEditorData.GravityScaleValue;
-			body->color = WHITE;//ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
-			body->restitution = 0.8f;
-			
-			//ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
-			AddBody(body);
-		}
+		if (!ncEditorIntersect) {
 
-		//connect springs
-		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && selectedBody) connectBody = selectedBody;
-		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && connectBody) DrawLineBodyToPosition(connectBody, position);
-		if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && connectBody) {
-			if (selectedBody && selectedBody != connectBody) {
-				ncSpring_t* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position), 20);
-				AddSpring(spring);
+			//create body
+			if ((IsMouseButtonPressed(0) || (IsMouseButtonDown(0) && IsKeyDown(KEY_LEFT_CONTROL)))) {
+				ncBody* body = CreateBody(ConvertScreenToWorld(position), ncEditorData.MassValue, ncEditorData.BodyTypeActive);
+				body->damping = ncEditorData.DampingValue;
+				body->gravityScale = ncEditorData.GravityScaleValue;
+				body->color = WHITE;//ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
+				body->restitution = 0.8f;
+
+				//ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
+				AddBody(body);
+			}
+
+			//connect springs
+			if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && selectedBody) connectBody = selectedBody;
+			if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && connectBody) DrawLineBodyToPosition(connectBody, position);
+			if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && connectBody) {
+				if (selectedBody && selectedBody != connectBody) {
+					ncSpring_t* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position), 20);
+					AddSpring(spring);
+				}
 			}
 		}
 

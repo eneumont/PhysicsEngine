@@ -9,11 +9,12 @@ typedef struct ncEditorData {
     bool EditorBoxActive;
     bool BodyTypeEditMode;
     int BodyTypeActive;
-    float MassMinValue;
-    float MassMaxValue;
+    float MassValue;
     float DampingValue;
     float GravityScaleValue;
     float GravitationValue;
+    float StiffnessValue;
+    float GravityValue;
 } ncEditorData_t;
 
 extern ncEditorData_t ncEditorData;
