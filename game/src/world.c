@@ -50,5 +50,14 @@ void DestroyBody(ncBody* body) {
 }
 
 void DestroyAllBodies() {
+	if (!ncBodies) return;
 
+	ncBody* body = ncBodies;
+	while (body) {
+		ncBody* next = body->next;
+		free(body);
+		body = next;
+	}
+
+	ncBodies = NULL;
 }

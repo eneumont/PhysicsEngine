@@ -18,6 +18,10 @@
 int main(void) {
 	ncBody* selectedBody = NULL;
 	ncBody* connectBody = NULL;
+	ncContact_t* contacts = NULL;
+
+	//a
+	float timeAccumlator = 0;
 
 	InitWindow(1280, 720, "Physics Engine");
 	InitEditor();
@@ -27,6 +31,8 @@ int main(void) {
 		//update
 		float dt = GetFrameTime();
 		float fps = (float)GetFPS();
+		//a
+		float fixedTimeStep = 1.0 / ncEditorData.TimestepValue;
 
 		//initialize world
 		ncGravity = (Vector2){ 0, ncEditorData.GravityValue };
@@ -50,7 +56,7 @@ int main(void) {
 				body->damping = ncEditorData.DampingValue;
 				body->gravityScale = ncEditorData.GravityScaleValue;
 				body->color = WHITE;//ColorFromHSV( GetRandomFloatValue(0, 360), 1, 1);
-				body->restitution = 0.8f;
+				body->restitution = ncEditorData.RestitutionValue;
 
 				//ApplyForce(body, (Vector2){GetRandomFloatValue(-200, 200), GetRandomFloatValue(-200, 200) }, FM_VELOCITY);
 				AddBody(body);
@@ -61,9 +67,27 @@ int main(void) {
 			if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && connectBody) DrawLineBodyToPosition(connectBody, position);
 			if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && connectBody) {
 				if (selectedBody && selectedBody != connectBody) {
-					ncSpring_t* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position), 20);
+					ncSpring_t* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position), ncEditorData.kValue);
 					AddSpring(spring);
 				}
+			}
+
+			if (IsKeyDown(KEY_LEFT_ALT)) {
+				if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && selectedBody) connectBody = selectedBody;
+				if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && connectBody) DrawLineBodyToPosition(connectBody, position);
+				if (connectBody) {
+					Vector2 world = ConvertScreenToWorld(position);
+					if (connectBody->type == BT_STATIC || connectBody->type == BT_KINEMATIC) {
+						connectBody->position = world;
+					} else {
+						ApplySpringForcePosition(world, connectBody, 0, 20, 10);
+					}
+				}
+			}
+
+			if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+				selectedBody = NULL;
+				connectBody = NULL;
 			}
 		}
 
@@ -130,20 +154,38 @@ int main(void) {
 			ApplyForce(body2, force, FM_VELOCITY);
 		}*/
 
-		//apply force
-		ApplyGravity(ncBodies, ncEditorData.GravitationValue);
-		ApplySpringForce(ncSprings);
-
-		//update bodies
-		for (ncBody* body = ncBodies; body; body = body->next) {
-			Step(body, dt);
+		if (ncEditorData.SimulateBtnActive) {
+			timeAccumlator = timeAccumlator + dt;
 		}
 
-		//collision
-		ncContact_t* contacts = NULL;
-		CreateContacts(ncBodies, &contacts);
-		SeparateContacts(contacts);
-		ResolveContacts(contacts);
+		//a
+		while (timeAccumlator >= fixedTimeStep) {
+
+			//apply force
+			ApplyGravity(ncBodies, ncEditorData.GravitationValue);
+			ApplySpringForce(ncSprings);
+
+			//update bodies
+			for (ncBody* body = ncBodies; body; body = body->next) {
+				Step(body, dt);
+			}
+
+			//collision
+			free(contacts);
+			ncContact_t* contacts = NULL;
+			CreateContacts(ncBodies, &contacts);
+			SeparateContacts(contacts);
+			ResolveContacts(contacts);
+
+			timeAccumlator = timeAccumlator - fixedTimeStep;
+		}
+
+		if (ncEditorData.ResetBtnPressed) {
+			DestoryAllBodies();
+			DestoryAllSprings();
+			ncBodies = NULL;
+			ncSprings = NULL;
+		}
 
 		//render
 		BeginDrawing();
