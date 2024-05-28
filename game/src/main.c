@@ -180,12 +180,12 @@ int main(void) {
 			timeAccumlator = timeAccumlator - fixedTimeStep;
 		}
 
-		if (ncEditorData.ResetBtnPressed) {
+		/*if (ncEditorData.ResetBtnPressed) {
 			DestoryAllBodies();
 			DestoryAllSprings();
 			ncBodies = NULL;
 			ncSprings = NULL;
-		}
+		}*/
 
 		//render
 		BeginDrawing();
