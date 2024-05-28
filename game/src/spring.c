@@ -85,11 +85,11 @@ void ApplySpringForcePosition(Vector2 position, struct ncBody* body, float restL
 	Vector2 ndirection = Vector2Normalize(direction);
 
 	// Calculate the damping force (opposing force due to velocity)
-	float dampingForce = damping * Vector2DotProduct(body->velocity, ndirection); //<damping * DotProduct(body velocity, ndirection)>
+	float dampingForce = damping * Vector2DotProduct(body->velocity, ndirection);
 
 	// Calculate the total force by combining spring force and damping force
-	float totalForce = force + dampingForce; //<force + damping force>
+	float totalForce = force + dampingForce;
 
 	// Apply the total force to the body in the direction of the normalized vector
-	ApplyForce(body, Vector2Scale(ndirection, -totalForce)/*<scale the normalized direction vector by - totalForce >*/, FM_FORCE);
+	ApplyForce(body, Vector2Scale(ndirection, -totalForce), FM_FORCE);
 }
