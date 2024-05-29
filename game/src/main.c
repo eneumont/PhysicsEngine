@@ -180,6 +180,7 @@ int main(void) {
 			timeAccumlator = timeAccumlator - fixedTimeStep;
 		}
 
+		//reset button doesn't work
 		/*if (ncEditorData.ResetBtnPressed) {
 			DestoryAllBodies();
 			DestoryAllSprings();
