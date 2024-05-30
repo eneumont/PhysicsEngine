@@ -181,12 +181,10 @@ int main(void) {
 		}
 
 		//reset button doesn't work
-		/*if (ncEditorData.ResetBtnPressed) {
-			DestoryAllBodies();
-			DestoryAllSprings();
-			ncBodies = NULL;
-			ncSprings = NULL;
-		}*/
+		if (ncEditorData.ResetBtnPressed) {
+			DestroyAllBodies();
+			DestroyAllSprings();
+		}
 
 		//render
 		BeginDrawing();
